@@ -1,0 +1,11 @@
+# depslib dependency file v1.0
+1726360299 source:c:\users\ullas\onedrive\documents\c\restaurant seat reservation system\main.cpp
+	<iostream>
+	<fstream>
+	<windows.h>
+	<vector>
+	<string>
+	<iomanip>
+	<unordered_map>
+	<algorithm>
+
