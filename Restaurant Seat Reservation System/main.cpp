@@ -1,109 +1,126 @@
 #include <iostream>
-#include <fstream> // for file open ifstream file("Booking.txt");
-#include <windows.h> // for  Sleep(1000);
-#include <vector> // for  vector<Node*> bookings;
+#include <fstream>
+#include <windows.h>
+#include <vector>
 #include <string>
-#include <iomanip> // for setw
+#include <iomanip>
 #include <unordered_map>
-#include <algorithm> // for std::sort
+#include <algorithm>
 
 using namespace std;
 
-const int TABLE_COUNT = 15;
+const int TABLE_COUNT = 15;  // Define the total number of tables in the restaurant
 
-struct Table {
-    bool reserved;
-    string status;
-};
-
-// Linked list node for booking information
-class Node {
-public:
+// Structure to represent a booking with necessary information
+struct Booking {
     int bookingNum;
-    string name;
-    int age;
-    string phoneNum;
-    int tableNum;
-    Node* next;
+    string name;       // Customer's name
+    int age;           // Customer's age
+    string phoneNum;   // Customer's phone number
+    int tableNum;      // Table number assigned to the booking
 };
 
+// Structure to represent a table's reservation status
+struct Table {
+    bool reserved;     // Whether the table is reserved
+    string status;     // Status of the table (e.g., "Available" or "No available")
+};
+
+// Admin class to manage bookings, table statuses, and other related operations
 class Admin {
 private:
-    string password = "admin123"; // Default password, should be securely handled in practice
+    string password = "admin123";  // Default password (in real applications, secure password management should be used)
 
+    // Private methods for different functionalities
     void viewCustomerInfo();
     void bookTable();
     void viewTableStatus();
     void searchCustomer();
-    void editBooking();
     void cancelBooking();
     void logout();
     void menu();
 
+    // Helper method to load bookings from the file
+    vector<Booking> loadBookings();
+
 public:
+    // Method to log in as admin
     void login();
 };
 
-void Admin::viewCustomerInfo() {
+// Loads bookings from the "Booking.txt" file into a vector of Booking structs
+vector<Booking> Admin::loadBookings() {
     ifstream file("Booking.txt");
+    vector<Booking> bookings;
+
     if (!file) {
-        cout << "Error: file could not be opened!" << endl;
-        Sleep(1000);
-        return;
+        return bookings;  // Return an empty vector if file can't be opened
     }
 
-    vector<Node*> bookings;
     int bookingNum, age, tableNum;
     string name, phoneNum;
 
-    while (file >> bookingNum >> name >> age >>  phoneNum >> tableNum) {
-        Node* newNode = new Node{bookingNum, name, age, phoneNum, tableNum, nullptr};
-        bookings.push_back(newNode);
+    // Read booking information from the file
+    while (file >> bookingNum >> name >> age >> phoneNum >> tableNum) {
+        bookings.push_back({bookingNum, name, age, phoneNum, tableNum});
     }
-    file.close();
 
-    // Bubble sort by table number
-    sort(bookings.begin(), bookings.end(), [](Node* a, Node* b) {
-        return a->tableNum < b->tableNum;
+    file.close();  // Close the file after reading
+    return bookings;  // Return the list of bookings
+}
+
+// Display customer information and booking details
+void Admin::viewCustomerInfo() {
+    vector<Booking> bookings = loadBookings();
+
+    if (bookings.empty()) {
+        cout << "No bookings found!" << endl;
+        Sleep(1000);
+        menu();
+        return;
+    }
+
+    // Sort bookings by table number for easy viewing
+    sort(bookings.begin(), bookings.end(), [](const Booking& a, const Booking& b) {
+        return a.tableNum < b.tableNum;
     });
 
+    // Display booking details in a table format
     cout << "\n\t\t\t\t   Booking Details" << endl;
     cout << "\n     Booking No        Table Number             Name                Age            Phone Number ";
     cout << "\n     *******************************************************************************************";
+
     for (const auto& booking : bookings) {
-        cout << endl << setw(9) << booking->bookingNum
-             << setw(20) << booking->tableNum
-             << setw(24) << booking->name
-             << setw(18) << booking->age
-             << setw(24) << booking->phoneNum << endl;
-        delete booking;
+        cout << endl << setw(9) << booking.bookingNum
+             << setw(20) << booking.tableNum
+             << setw(24) << booking.name
+             << setw(18) << booking.age
+             << setw(24) << booking.phoneNum << endl;
     }
-    menu();
+
+    menu();  // Go back to the main menu after displaying
 }
 
+// Function to handle table reservations and adding new bookings
 void Admin::bookTable() {
+    // Initialize tables
     unordered_map<int, Table> tables;
     for (int i = 1; i <= TABLE_COUNT; ++i) {
         tables[i] = {false, "Available"};
     }
 
-    ifstream file("Booking.txt");
-    int maxBookingNum = 0;  // This will store the highest booking number
-    if (file) {
-        int bookingNum, age, tableNum;
-        string name, phoneNum;
-        while (file >> bookingNum >> name >> age >> phoneNum >> tableNum) {
-            if (tableNum >= 1 && tableNum <= TABLE_COUNT) {
-                tables[tableNum] = {true, "No available"};
-            }
-            // Update maxBookingNum to hold the highest booking number
-            if (bookingNum > maxBookingNum) {
-                maxBookingNum = bookingNum;
-            }
+    vector<Booking> bookings = loadBookings();
+    int maxBookingNum = 0;  // Keep track of the highest booking number
+
+    // Update table reservation status based on existing bookings
+    for (const auto& booking : bookings) {
+        if (booking.tableNum >= 1 && booking.tableNum <= TABLE_COUNT) {
+            tables[booking.tableNum] = {true, "No available"};
         }
-        file.close();
+        maxBookingNum = max(maxBookingNum, booking.bookingNum);  // Find the largest booking number
     }
 
+    // Display available and reserved tables
     cout << "------Select a table to book------" << endl;
     for (int i = 1; i <= TABLE_COUNT; ++i) {
         cout << "Table [" << i << "] : " << tables[i].status << endl;
@@ -113,76 +130,83 @@ void Admin::bookTable() {
     cout << "\nEnter table number to reserve: ";
     cin >> tableNum;
 
+    // Check if the selected table is valid and available
     if (tableNum < 1 || tableNum > TABLE_COUNT || tables[tableNum].reserved) {
         cout << "Table unavailable or invalid number. Please try again." << endl;
         Sleep(2000);
-        bookTable();  // Recurse to reattempt booking
+        bookTable();  // Retry if input is invalid
         return;
     }
 
+    // Get customer details
     cout << "Enter customer name: ";
     string name;
     cin >> name;
+
     cout << "Enter age: ";
     int age;
     cin >> age;
 
-    // Validate phone number (should be 11 digits)
-    string phoneNum = "1";
-    while (phoneNum.length() > 11 || phoneNum.length() <= 10) {
-        cout << "Please enter your phone number: ";
+    // Validate phone number
+    string phoneNum;
+    do {
+        cout << "Please enter your phone number (11 digits): ";
         cin >> phoneNum;
 
-        if (phoneNum.length() > 11 || phoneNum.length() <= 10) {
-            cout << endl << "Invalid input. Please input an 11-digit number" << endl;
+        if (phoneNum.length() != 11) {
+            cout << "Invalid input. Please enter exactly 11 digits." << endl;
         }
-    }
+    } while (phoneNum.length() != 11);
 
-    // Increment booking number based on the highest booking number found in the file
+    // Increment booking number for the new booking
     int newBookingNum = maxBookingNum + 1;
 
-    // Append to file
+    // Append new booking to the file
     ofstream outfile("Booking.txt", ios::app);
     outfile << newBookingNum << " " << name << " " << age << " " << phoneNum << " " << tableNum << endl;
     outfile.close();
 
     cout << "Booking added successfully!" << endl;
     Sleep(1000);
-    menu();  // Assuming you have a menu() function
+    menu();  // Return to menu after booking
 }
 
+// Display the current status of all tables (available or reserved)
 void Admin::viewTableStatus() {
     system("cls");
+
     unordered_map<int, Table> tables;
     for (int i = 1; i <= TABLE_COUNT; ++i) {
         tables[i] = {false, "Available"};
     }
 
-    ifstream file("Booking.txt");
-    if (file) {
-        int bookingNum, age, tableNum;
-        string name, gender, phoneNum;
-        while (file >> bookingNum >> name >> age >> phoneNum >> tableNum) {
-            if (tableNum >= 1 && tableNum <= TABLE_COUNT) {
-                tables[tableNum] = {true, "No available"};
-            }
+    vector<Booking> bookings = loadBookings();
+
+    // Update table status based on existing bookings
+    for (const auto& booking : bookings) {
+        if (booking.tableNum >= 1 && booking.tableNum <= TABLE_COUNT) {
+            tables[booking.tableNum] = {true, "No available"};
         }
-        file.close();
     }
 
+    // Display status of all tables
     cout << "\n\n\t------Tables Status------" << endl;
     for (int i = 1; i <= TABLE_COUNT; ++i) {
         cout << "\tTable [" << i << "] : " << tables[i].status << endl;
     }
+
     menu();
 }
 
+// Search for customer details by name
 void Admin::searchCustomer() {
     system("cls");
-    ifstream file("Booking.txt");
-    if (!file) {
-        cout << "Error: file could not be opened!" << endl;
+    vector<Booking> bookings = loadBookings();
+
+    if (bookings.empty()) {
+        cout << "No bookings found!" << endl;
         Sleep(1000);
+        menu();
         return;
     }
 
@@ -190,310 +214,141 @@ void Admin::searchCustomer() {
     cout << "\n\n\t\tEnter the customer's name to search: ";
     cin >> searchName;
 
-    bool found = false;
-    int bookingNum, age, tableNum;
-    string name,  phoneNum;
-
-    cout << "\n\t\t\t\t   Booking Details" << endl << endl;
+    bool found = false;  // Flag to check if a match is found
+    cout << "\n\t\t\t\t   Booking Details" << endl;
     cout << "\n     Booking No          Name              Age           Phone Number          Table Number      ";
     cout << "\n**************************************************************************************************";
-    while (file >> bookingNum >> name >> age  >> phoneNum >> tableNum) {
-        if (searchName == name) {
-            cout << endl << setw(10) << bookingNum
-                 << setw(20) << name
-                 << setw(15) << age
-                 << setw(23) << phoneNum
-                 << setw(16) << tableNum << endl;
+
+    // Search and display matching bookings
+    for (const auto& booking : bookings) {
+        if (booking.name == searchName) {
+            cout << endl << setw(10) << booking.bookingNum
+                 << setw(20) << booking.name
+                 << setw(15) << booking.age
+                 << setw(23) << booking.phoneNum
+                 << setw(16) << booking.tableNum << endl;
             found = true;
         }
     }
+
     if (!found) {
         cout << "\nNo record found!" << endl;
     }
-    file.close();
- menu();
 
+    menu();  // Return to menu after search
 }
 
-void Admin::editBooking() {
-    system("cls");
-
-    unordered_map<int, Table> tables;
-    int bookingNum2, tableNum2, tableNum3;
-    bool found = false;
-
-    fstream file, tempFile;
-
-    // Open the booking file
-    file.open("Booking.txt", ios::in);
-    if (!file) {
-        cout << "Error: file could not be opened!";
-        Sleep(1000);
-        return;
-    }
-
-    // Display current bookings
-    cout << "\n\t\t\t\t\t    Booking Details " << endl;
-    cout << "\n\t\t\t        Booking No         Name           Table Number    ||";
-    cout << "\n\t\t\t        ******************************************************";
-
-    string line, name,  phoneNum;
-    int bookingNum, age, tableNum;
-    int num = 1;
-
-    // Read and display booking details
-    while (getline(file, line)) {
-        istringstream iss(line);
-        iss >> bookingNum >> name >> age >> phoneNum >> tableNum;
-
-        cout << endl << "\t\t\t" << num << ". " << setw(9) << bookingNum << setw(19) << name << setw(16) << tableNum << endl;
-        num++;
-    }
-    file.close();
-
-    // Ask for the booking number to edit
-    cout << "\n\t\t\tEnter booking number you want to edit: ";
-    cin >> bookingNum2;
-
-    file.open("Booking.txt", ios::in);
-    if (!file) {
-        cout << "Error: file could not be opened!";
-        Sleep(1000);
-        return;
-    }
-
-    // Find the booking number in the file
-    while (getline(file, line)) {
-        istringstream iss(line);
-        iss >> bookingNum >> name >> age >> phoneNum >> tableNum;
-
-        if (bookingNum2 == bookingNum) {
-            found = true;
-            tableNum2 = tableNum;  // Store the current table number
-            break;
-        }
-    }
-    file.close();
-
-    if (!found) {
-        cout << "\t\t\t Invalid booking number. Please try again.";
-        Sleep(1000);
-        return;
-    }
-
-    // Mark reserved tables
-    file.open("Booking.txt", ios::in);
-    while (getline(file, line)) {
-        istringstream iss(line);
-        iss >> bookingNum >> name >> age >> phoneNum >> tableNum;
-
-        for (int i = 1; i <= TABLE_COUNT; i++) {
-            if (i == tableNum) {
-                tables[i].reserved = true;
-                tables[i].status = "Not available";
-            }
-        }
-    }
-    file.close();
-
-    // Display table status
-    system("cls");
-    cout << "\n\n\t\t------Table Status------" << endl;
-    for (int i = 1; i <= TABLE_COUNT; i++) {
-        cout << "\t\tTable [" << i << "] : ";
-        if (tables[i].reserved) {
-            cout << tables[i].status << endl;
-        } else {
-            cout << "Available" << endl;
-        }
-    }
-
-    // Ask for the new table number
-    cout << "\n\t\tEnter the new table number: ";
-    cin >> tableNum3;
-
-    // Check if the new table number is valid
-    if (tableNum3 > TABLE_COUNT || tableNum3 <= 0) {
-        cout << "\t\tInvalid table number. Please try again.";
-        Sleep(1000);
-        //return;
-    }
-
-    if (tables[tableNum3].reserved) {
-        cout << "\t\tThe table is unavailable. Please try again.";
-        Sleep(1000);
-        return;
-    }
-
-    // Edit booking details in the file
-    file.open("Booking.txt", ios::in);
-    tempFile.open("tmp.txt", ios::app | ios::out);
-
-    while (getline(file, line)) {
-        istringstream iss(line);
-        iss >> bookingNum >> name >> age >>  phoneNum >> tableNum;
-
-        if (bookingNum2 != bookingNum) {
-            tempFile << bookingNum << " " << name << " " << age << " "
-                   << phoneNum << " " << tableNum << endl;
-        } else {
-            tempFile << bookingNum << " " << name << " " << age << " "
-                     << phoneNum << " " << tableNum3 << endl;
-        }
-    }
-
-    cout << "\n\t\tTable Number " << tableNum2 << " changed to Table Number " << tableNum3 << endl;
-    cout << "\n\t\tEdit successful...";
-
-    file.close();
-    tempFile.close();
-
-    // Replace old file with updated file
-    remove("Booking.txt");
-    rename("tmp.txt", "Booking.txt");
-
-    cout << "\n\t\tBack to Menu...";
-    Sleep(2000);
-
-    menu();  // Assuming you have a Menu() function to return to the main menu
-}
-
+// Function to cancel or delete a booking
 void Admin::cancelBooking() {
     system("cls");
-    int bookingNum2;
-    bool found = false;
 
-    fstream file, tempFile;
-    file.open("Booking.txt", ios::in);
-
-    if (!file) {
-        cout << "Error: file could not be opened!";
+    vector<Booking> bookings = loadBookings();
+    if (bookings.empty()) {
+        cout << "No bookings found!" << endl;
         Sleep(1000);
+        menu();
         return;
     }
 
+    int bookingNum2;
     cout << "\n\t\t\t\t   Booking Details" << endl;
     cout << "\n       Booking No            Name           Age          Phone Number            Table Number ";
     cout << "\n       *******************************************************************************************";
 
-    string line;
-    int bookingNum, age, tableNum;
-    string name,  phoneNum;
-    int num = 1;
-
-    // Display all bookings
-    while (getline(file, line)) {
-        istringstream iss(line);
-        iss >> bookingNum >> name >> age >> phoneNum >> tableNum;
-
-        cout << endl << num << ". "
-             << setw(9) << bookingNum
-             << setw(22) << name
-             << setw(12) << age
-             << setw(22) << phoneNum
-             << setw(19) << tableNum << endl;
-        num++;
+    // Display all bookings for cancellation selection
+    for (const auto& booking : bookings) {
+        cout << endl << setw(9) << booking.bookingNum
+             << setw(22) << booking.name
+             << setw(12) << booking.age
+             << setw(22) << booking.phoneNum
+             << setw(19) << booking.tableNum << endl;
     }
-    file.close();
 
-    cout << "\n\t Enter the booking number to delete the reservation: ";
+    cout << "\n\tEnter the booking number to delete the reservation: ";
     cin >> bookingNum2;
 
-    file.open("Booking.txt", ios::in);
-    tempFile.open("tmp.txt", ios::app | ios::out);
+    // Create a temporary file to store bookings except the one to be deleted
+    ofstream tempFile("tmp.txt", ios::out);
+    bool found = false;
 
-    if (!file || !tempFile) {
-        cout << "Error: could not open the file!";
-        Sleep(1000);
-        return;
-    }
-
-    // Read bookings again to check the entered booking number and write to a temp file
-    while (getline(file, line)) {
-        istringstream iss(line);
-        iss >> bookingNum >> name >> age >>  phoneNum >> tableNum;
-
-        if (bookingNum2 == bookingNum) {
+    for (const auto& booking : bookings) {
+        if (booking.bookingNum != bookingNum2) {
+            tempFile << booking.bookingNum << " " << booking.name << " " << booking.age
+                     << " " << booking.phoneNum << " " << booking.tableNum << endl;
+        } else {
             found = true;
-        } else {
-            tempFile << bookingNum << " " << name << " " << age << " "
-                     << phoneNum << " " << tableNum << endl;
         }
     }
 
-    file.close();
     tempFile.close();
+    remove("Booking.txt");       // Delete original booking file
+    rename("tmp.txt", "Booking.txt");  // Rename temporary file to original file
 
-    if (!found) {
-        cout << "\n\t Invalid booking number! Please try again.";
-        Sleep(1000);
+    if (found) {
+        cout << "\nReservation cancelled successfully!" << endl;
     } else {
-        char confirm;
-        cout << "\n\t Are you sure you want to delete booking number " << bookingNum2 << "? (y/n): ";
-        cin >> confirm;
-
-        if (tolower(confirm) == 'y') {
-            remove("Booking.txt");
-            rename("tmp.txt", "Booking.txt");
-            cout << "\n\t Cancelled successfully...";
-        } else {
-            cout << "\n\t Back to Menu...";
-        }
-        Sleep(1000);
+        cout << "\nBooking number not found!" << endl;
     }
+
+    Sleep(1000);
     menu();
 }
 
+// Logs out the admin and returns to login screen
 void Admin::logout() {
     system("cls");
-    cout << "You have been logged out." << endl;
+    cout << "\nLogging out..." << endl;
     Sleep(1000);
-    exit(0);
+    login();  // Return to login screen
 }
 
+// Main menu for admin functionalities
 void Admin::menu() {
-    cout << endl << endl ;
-    cout << "\t\t\t\t\tRestaurant Table Reservation System\n\n";
-    cout << "1. View Customer Information\n";
-    cout << "2. Book a Table\n";
+
+    // Display menu options
+    cout << "\n-------Restaurant Management-------\n";
+    cout << "1. View Customer Info\n";
+    cout << "2. Book Table\n";
     cout << "3. View Table Status\n";
-    cout << "4. Search for a Customer\n";
-    cout << "5. Edit a Booking\n";
-    cout << "6. Cancel/Complete a Booking\n";
-    cout << "7. Logout\n";
+    cout << "4. Search Customer\n";
+    cout << "5. Cancel Booking\n";
+    cout << "6. Logout\n";
     cout << "Enter your choice: ";
     int choice;
     cin >> choice;
+
+    // Handle user selection
     switch (choice) {
         case 1: viewCustomerInfo(); break;
         case 2: bookTable(); break;
         case 3: viewTableStatus(); break;
         case 4: searchCustomer(); break;
-        case 5: editBooking(); break;
-        case 6: cancelBooking(); break;
-        case 7: logout(); break;
+        case 5: cancelBooking(); break;
+        case 6: logout(); break;
         default:
             cout << "Invalid choice! Please try again." << endl;
             Sleep(1000);
-            menu();
+            menu();  // Retry on invalid input
     }
 }
 
+// Admin login function with password verification
 void Admin::login() {
-     menu();
-    /*string enteredPassword;
+    string enteredPassword;
     cout << "Enter Admin Password: ";
     cin >> enteredPassword;
 
+    // Check if the entered password matches
     if (enteredPassword == password) {
-        menu();
+        menu();  // Grant access to the menu
     } else {
         cout << "Incorrect password. Try again." << endl;
         Sleep(1000);
-        login();
-    }*/
+        login();  // Retry login on incorrect password
+    }
 }
 
+// Main function to initiate admin login
 int main() {
     Admin admin;
     admin.login();
