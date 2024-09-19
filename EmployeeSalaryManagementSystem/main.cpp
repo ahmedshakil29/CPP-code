@@ -34,7 +34,7 @@ void displayEmployees(const vector<Employee>& employees);
 void generatePaySlip(const vector<Employee>& employees);
 double calculateNetSalary(const Employee& emp);
 double calculateTotalSalary(const Employee& emp);
-//void updateSalaryStructure(vector<Employee>& employees);
+
 void updateDeductions(vector<Employee>& employees);
 void updateEmployeeAllowances(vector<Employee>& employees);
 void updateEmployeeSalary(vector<Employee>& employees);
@@ -45,7 +45,7 @@ void displayMenu() {
     cout <<endl << endl<< "1. Add Employee" << endl;
     cout << "2. Display Employees" << endl;
     cout << "3. Generate Pay Slip" << endl;
-    cout << "4. Update Salary Structure" << endl;
+    cout << "4. Display Employees By ID " << endl;
     cout << "5. Update Deductions" << endl;
     cout << "6. Update Employee Allowances" << endl;
     cout << "7. Update Employee Salary" << endl;
