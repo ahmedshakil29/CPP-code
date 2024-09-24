@@ -1,0 +1,29 @@
+# depslib dependency file v1.0
+1726822658 source:c:\users\ullas\onedrive\documents\c\austadmissionsystem\main.cpp
+	<iostream>
+	<fstream>
+	<string>
+	<cstring>
+	<vector>
+	<algorithm>
+
+1726835090 source:d:\myself_dev_folder\emu final project\austadmissionsystem\main.cpp
+	<iostream>
+	<fstream>
+	<string>
+	<cstring>
+	<vector>
+	<algorithm>
+	<ctime>
+	<iomanip>
+
+1726863144 source:d:\myself_dev_folder\emu final project\20230205165\austadmissionsystem\main.cpp
+	<iostream>
+	<fstream>
+	<string>
+	<cstring>
+	<vector>
+	<algorithm>
+	<ctime>
+	<iomanip>
+

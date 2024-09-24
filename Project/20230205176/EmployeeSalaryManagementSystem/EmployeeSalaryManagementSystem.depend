@@ -1,0 +1,14 @@
+# depslib dependency file v1.0
+1726421632 source:c:\users\ullas\onedrive\documents\c\employeesalarymanagementsystem\main.cpp
+	<iostream>
+	<vector>
+	<fstream>
+	<sstream>
+	<iomanip>
+
+1726856572 source:d:\myself_dev_folder\emu final project\20230205176\employeesalarymanagementsystem\main.cpp
+	<iostream>
+	<vector>
+	<fstream>
+	<iomanip>
+

@@ -1,0 +1,28 @@
+# depslib dependency file v1.0
+1726788970 source:c:\users\ullas\onedrive\documents\c\doctorappointmentsystem\main.cpp
+	<iostream>
+	<fstream>
+	<vector>
+	<string>
+	<sstream>
+	<cstring>
+
+1726789893 source:d:\myself_dev_folder\emu final project\doctor appoinment\doctorappointmentsystem\main.cpp
+	<iostream>
+	<fstream>
+	<vector>
+	<string>
+	<sstream>
+	<cstring>
+	<cctype>
+	<algorithm>
+	<iomanip>
+
+1726852274 source:d:\myself_dev_folder\emu final project\20230205181\doctor appoinment\doctorappointmentsystem\main.cpp
+	<iostream>
+	<fstream>
+	<vector>
+	<cstring>
+	<algorithm>
+	<iomanip>
+
