@@ -1,0 +1,53 @@
+# depslib dependency file v1.0
+1726785851 source:c:\users\ullas\onedrive\documents\c\bloodbank\main.cpp
+	<iostream>
+	<fstream>
+	<vector>
+	<string>
+	<sstream>
+	<algorithm>
+	<cstring>
+	<iomanip>
+	<limits>
+
+1721387084 c:\users\ullas\onedrive\documents\c\bloodbank\bloodbank.h
+	<iostream>
+	<vector>
+	<string>
+	<fstream>
+	"Donor.h"
+	"Recipient.h"
+
+1721223042 c:\users\ullas\onedrive\documents\c\bloodbank\donor.h
+	<iostream>
+	<string>
+
+1721202278 c:\users\ullas\onedrive\documents\c\bloodbank\recipient.h
+	<iostream>
+	<string>
+
+1721202294 c:\users\ullas\onedrive\documents\c\bloodbank\blooddonation.h
+	<iostream>
+	<string>
+
+1722460713 source:c:\users\ullas\onedrive\documents\c\bloodbank\donor.cpp
+	<iostream>
+	<string>
+	<vector>
+	<fstream>
+
+1722460713 c:\users\ullas\onedrive\documents\c\bloodbank\donor.cpp
+	<iostream>
+	<string>
+	<vector>
+	<fstream>
+
+1726858929 source:d:\myself_dev_folder\emu final project\20230205166\bloodbank\main.cpp
+	<iostream>
+	<fstream>
+	<vector>
+	<string>
+	<algorithm>
+	<cstring>
+	<iomanip>
+
